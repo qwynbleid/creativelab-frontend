@@ -1,12 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { postService } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
+import { initializeIcons, updateIcons } from '../utils/icons';
 
 const Post = ({ post, currentUserId, onPostUpdate }) => {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+
+    // Initialize icons when component mounts
+    useEffect(() => {
+        initializeIcons();
+    }, []);
+
+    // Update icons whenever the component updates
+    useEffect(() => {
+        updateIcons();
+    });
+
+    // Check if post is liked when component mounts
+    useEffect(() => {
+        const checkLikeStatus = async () => {
+            try {
+                const response = await postService.checkIfLiked(post.id, currentUserId);
+                setIsLiked(response.isLiked);
+            } catch (error) {
+                console.error('Error checking like status:', error);
+            }
+        };
+
+        if (currentUserId) {
+            checkLikeStatus();
+        }
+    }, [post.id, currentUserId]);
+
+    // Update likes count when post prop changes
+    useEffect(() => {
+        setLikesCount(post.likesCount || 0);
+    }, [post.likesCount]);
 
     useEffect(() => {
         console.log('Post data:', {
@@ -14,7 +47,9 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             user: post.user,
             hasProfilePicture: !!post.user?.profilePicture,
             profilePictureType: post.user?.profilePicture ? typeof post.user.profilePicture : 'none',
-            profilePictureBase64: !!post.user?.profilePictureBase64
+            profilePictureBase64: !!post.user?.profilePictureBase64,
+            isLikedByUser: post.isLikedByUser,
+            likesCount: post.likesCount
         });
         loadComments();
     }, [post.id]);
@@ -29,13 +64,27 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     };
 
     const handleLike = async () => {
+        if (!currentUserId) {
+            console.error('No user ID available');
+            return;
+        }
+
         try {
-            await postService.likePost(post.id, currentUserId);
+            // Optimistically update UI
             setIsLiked(!isLiked);
+            setLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1);
+            
+            // Make API call
+            await postService.likePost(post.id, currentUserId);
+            
+            // If there's an onPostUpdate callback, call it without forcing a full reload
             if (onPostUpdate) {
                 onPostUpdate();
             }
         } catch (error) {
+            // Revert optimistic update on error
+            setIsLiked(isLiked);
+            setLikesCount(prevCount => isLiked ? prevCount + 1 : prevCount - 1);
             console.error('Error liking post:', error);
         }
     };
@@ -126,16 +175,20 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             <div className="flex space-x-4 mt-4">
                 <button 
                     onClick={handleLike}
-                    className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'}`}
+                    className={`flex items-center space-x-2 transition-colors duration-200 ${
+                        isLiked 
+                            ? 'text-red-500 hover:text-red-600' 
+                            : 'text-gray-600 hover:text-red-500'
+                    }`}
                 >
-                    <i data-feather="heart"></i>
-                    <span>Like ({post.likesCount})</span>
+                    <i data-feather="heart" className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} data-feather-replace></i>
+                    <span className={isLiked ? 'text-red-500' : 'text-gray-600'}>Like ({likesCount})</span>
                 </button>
                 <button 
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-blue-500"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors duration-200"
                 >
-                    <i data-feather="message-square"></i>
+                    <i data-feather="message-square" className="w-5 h-5" data-feather-replace></i>
                     <span>Comment ({post.commentsCount})</span>
                 </button>
             </div>
@@ -171,7 +224,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                                                 src: e.target.src,
                                                 user: comment.user
                                             });
-                                            e.target.src = 'https://via.placeholder.com/40';
+                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.fullName || comment.user?.username || 'User')}&background=random&color=fff`;
                                         }}
                                     />
                                     <span className="font-semibold">{comment.user?.fullName || 'Unknown User'}</span>

@@ -170,6 +170,18 @@ export const postService = {
             return [];
         }
     },
+
+    checkIfLiked: async (postId, userId) => {
+        try {
+            const response = await api.get(`/posts/${postId}/check-like`, {
+                params: { userId }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error checking if post is liked:', error);
+            return { isLiked: false };
+        }
+    },
 };
 
 export const userService = {
