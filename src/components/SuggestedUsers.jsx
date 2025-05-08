@@ -8,6 +8,39 @@ const SuggestedUsers = () => {
     const [error, setError] = useState(null);
     const { user } = useAuth();
 
+    const getProfilePictureUrl = (user) => {
+        if (!user) return 'https://ui-avatars.com/api/?name=User&background=random';
+        
+        try {
+            if (user.profilePicture) {
+                // Check if the profile picture is already a data URL
+                if (user.profilePicture.startsWith('data:image')) {
+                    return user.profilePicture;
+                }
+                // If it's a base64 string without the prefix, add it
+                if (typeof user.profilePicture === 'string' && user.profilePicture.length > 0) {
+                    return `data:image/jpeg;base64,${user.profilePicture}`;
+                }
+            }
+            if (user.profilePictureBase64) {
+                // Check if the profile picture is already a data URL
+                if (user.profilePictureBase64.startsWith('data:image')) {
+                    return user.profilePictureBase64;
+                }
+                // If it's a base64 string without the prefix, add it
+                if (typeof user.profilePictureBase64 === 'string' && user.profilePictureBase64.length > 0) {
+                    return `data:image/jpeg;base64,${user.profilePictureBase64}`;
+                }
+            }
+        } catch (error) {
+            console.error('Error processing profile picture:', error);
+        }
+        
+        // Fallback to a generated avatar based on the user's name
+        const name = user.fullName || user.username || 'User';
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+    };
+
     useEffect(() => {
         if (user?.id) {
             loadSuggestedUsers();
@@ -67,11 +100,16 @@ const SuggestedUsers = () => {
                     suggestedUsers.map((user) => (
                         <div key={user.id} className="flex items-center space-x-4">
                             <img 
-                                src={user.profilePicture 
-                                    ? `data:image/jpeg;base64,${user.profilePicture}`
-                                    : 'https://via.placeholder.com/40'} 
+                                src={getProfilePictureUrl(user)}
                                 alt={`${user.username}'s avatar`} 
                                 className="w-10 h-10 rounded-full"
+                                onError={(e) => {
+                                    console.error('Profile picture failed to load:', {
+                                        src: e.target.src,
+                                        user: user
+                                    });
+                                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username || 'User')}&background=random&color=fff`;
+                                }}
                             />
                             <div>
                                 <h3 className="font-semibold text-gray-800">{user.fullName}</h3>

@@ -9,6 +9,13 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     const [isLiked, setIsLiked] = useState(false);
 
     useEffect(() => {
+        console.log('Post data:', {
+            postId: post.id,
+            user: post.user,
+            hasProfilePicture: !!post.user?.profilePicture,
+            profilePictureType: post.user?.profilePicture ? typeof post.user.profilePicture : 'none',
+            profilePictureBase64: !!post.user?.profilePictureBase64
+        });
         loadComments();
     }, [post.id]);
 
@@ -53,18 +60,56 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
         ? `data:image/jpeg;base64,${post.imageData}`
         : null;
 
+    const getProfilePictureUrl = (user) => {
+        if (!user) return 'https://ui-avatars.com/api/?name=User&background=random';
+        
+        try {
+            if (user.profilePicture) {
+                // Check if the profile picture is already a data URL
+                if (user.profilePicture.startsWith('data:image')) {
+                    return user.profilePicture;
+                }
+                // If it's a base64 string without the prefix, add it
+                if (typeof user.profilePicture === 'string' && user.profilePicture.length > 0) {
+                    return `data:image/jpeg;base64,${user.profilePicture}`;
+                }
+            }
+            if (user.profilePictureBase64) {
+                // Check if the profile picture is already a data URL
+                if (user.profilePictureBase64.startsWith('data:image')) {
+                    return user.profilePictureBase64;
+                }
+                // If it's a base64 string without the prefix, add it
+                if (typeof user.profilePictureBase64 === 'string' && user.profilePictureBase64.length > 0) {
+                    return `data:image/jpeg;base64,${user.profilePictureBase64}`;
+                }
+            }
+        } catch (error) {
+            console.error('Error processing profile picture:', error);
+        }
+        
+        // Fallback to a generated avatar based on the user's name
+        const name = user.fullName || user.username || 'User';
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+    };
+
     return (
         <div className="post-card bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center space-x-4">
                 <img 
-                    src={post.user.profilePicture 
-                        ? `data:image/jpeg;base64,${post.user.profilePicture}`
-                        : 'https://via.placeholder.com/50'} 
-                    alt={`${post.user.username}'s avatar`} 
+                    src={getProfilePictureUrl(post.user)}
+                    alt={`${post.user?.username || 'User'}'s avatar`} 
                     className="w-12 h-12 rounded-full"
+                    onError={(e) => {
+                        console.error('Profile picture failed to load:', {
+                            src: e.target.src,
+                            user: post.user
+                        });
+                        e.target.src = 'https://via.placeholder.com/50';
+                    }}
                 />
                 <div>
-                    <h2 className="font-semibold text-gray-800">{post.user.fullName}</h2>
+                    <h2 className="font-semibold text-gray-800">{post.user?.fullName || 'Unknown User'}</h2>
                     <p className="text-sm text-gray-500">
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                     </p>
@@ -118,13 +163,18 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                             <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
                                 <div className="flex items-center space-x-2">
                                     <img 
-                                        src={comment.user.profilePicture 
-                                            ? `data:image/jpeg;base64,${comment.user.profilePicture}`
-                                            : 'https://via.placeholder.com/40'} 
-                                        alt={`${comment.user.username}'s avatar`} 
+                                        src={getProfilePictureUrl(comment.user)}
+                                        alt={`${comment.user?.username || 'User'}'s avatar`} 
                                         className="w-8 h-8 rounded-full"
+                                        onError={(e) => {
+                                            console.error('Comment profile picture failed to load:', {
+                                                src: e.target.src,
+                                                user: comment.user
+                                            });
+                                            e.target.src = 'https://via.placeholder.com/40';
+                                        }}
                                     />
-                                    <span className="font-semibold">{comment.user.fullName}</span>
+                                    <span className="font-semibold">{comment.user?.fullName || 'Unknown User'}</span>
                                 </div>
                                 <p className="mt-2 text-gray-700">{comment.content}</p>
                                 <p className="text-sm text-gray-500 mt-1">

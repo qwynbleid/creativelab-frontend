@@ -2,12 +2,23 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import reactLogo from '../assets/react.svg';
+import { initializeIcons, updateIcons } from '../utils/icons';
 
 const Navbar = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+
+    // Initialize icons when component mounts
+    useEffect(() => {
+        initializeIcons();
+    }, []);
+
+    // Update icons whenever the component updates
+    useEffect(() => {
+        updateIcons();
+    });
 
     useEffect(() => {
         console.log('Navbar user data:', {
@@ -59,14 +70,14 @@ const Navbar = () => {
                             to="/" 
                             className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                         >
-                            <i data-feather="home" className="w-5 h-5"></i>
+                            <i data-feather="home" className="w-5 h-5" data-feather-replace></i>
                             <span>Home</span>
                         </Link>
                         <Link 
                             to="/messages" 
                             className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                         >
-                            <i data-feather="message-circle" className="w-5 h-5"></i>
+                            <i data-feather="message-circle" className="w-5 h-5" data-feather-replace></i>
                             <span>Chat</span>
                         </Link>
 
@@ -86,12 +97,12 @@ const Navbar = () => {
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                <i data-feather="user" className="w-6 h-6 text-gray-400"></i>
+                                                <i data-feather="user" className="w-6 h-6 text-gray-400" data-feather-replace></i>
                                             </div>
                                         )}
                                     </div>
                                     <span className="text-gray-700">{user.username || 'User'}</span>
-                                    <i data-feather={isDropdownOpen ? "chevron-up" : "chevron-down"} className="w-5 h-5 text-gray-400"></i>
+                                    <i data-feather={isDropdownOpen ? "chevron-up" : "chevron-down"} className="w-5 h-5 text-gray-400" data-feather-replace></i>
                                 </button>
 
                                 {isDropdownOpen && (
@@ -103,7 +114,7 @@ const Navbar = () => {
                                                 role="menuitem"
                                                 onClick={() => setIsDropdownOpen(false)}
                                             >
-                                                <i data-feather="user" className="w-4 h-4"></i>
+                                                <i data-feather="user" className="w-4 h-4" data-feather-replace></i>
                                                 <span>My Profile</span>
                                             </Link>
                                             <button
@@ -111,7 +122,7 @@ const Navbar = () => {
                                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600 flex items-center space-x-2"
                                                 role="menuitem"
                                             >
-                                                <i data-feather="log-out" className="w-4 h-4"></i>
+                                                <i data-feather="log-out" className="w-4 h-4" data-feather-replace></i>
                                                 <span>Logout</span>
                                             </button>
                                         </div>
