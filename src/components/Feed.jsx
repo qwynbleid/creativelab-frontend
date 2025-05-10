@@ -66,7 +66,6 @@ const Feed = () => {
                         key={post.id}
                         post={post}
                         currentUserId={user?.id}
-                        onPostUpdate={handlePostUpdate}
                     />
                 ))
             )}

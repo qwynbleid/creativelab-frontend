@@ -9,6 +9,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+    const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
 
     // Initialize icons when component mounts
     useEffect(() => {
@@ -40,6 +41,10 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     useEffect(() => {
         setLikesCount(post.likesCount || 0);
     }, [post.likesCount]);
+
+    useEffect(() => {
+        setCommentsCount(post.commentsCount || 0);
+    }, [post.commentsCount]);
 
     useEffect(() => {
         console.log('Post data:', {
@@ -97,6 +102,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             await postService.addComment(post.id, currentUserId, newComment);
             setNewComment('');
             loadComments();
+            setCommentsCount(prev => prev + 1);
             if (onPostUpdate) {
                 onPostUpdate();
             }
@@ -194,7 +200,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                     className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors duration-200"
                 >
                     <i data-feather="message-square" className="w-5 h-5" data-feather-replace></i>
-                    <span>Comment ({post.commentsCount})</span>
+                    <span>Comment ({commentsCount})</span>
                 </button>
             </div>
 
