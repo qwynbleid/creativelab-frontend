@@ -10,6 +10,7 @@ import ProfileSetup from './components/auth/ProfileSetup';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import { initializeIcons, updateIcons } from './utils/icons';
+import Profile from './components/Profile';
 
 function App() {
     // Initialize Feather Icons
@@ -67,6 +68,14 @@ function App() {
                                         <i data-feather="plus" className="w-6 h-6"></i>
                                     </button>
                                 </div>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/profile/:userId"
+                        element={
+                            <ProtectedRoute>
+                                <Profile />
                             </ProtectedRoute>
                         }
                     />
