@@ -105,9 +105,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
         }
     };
 
-    const imageUrl = post.imageData 
-        ? `data:image/jpeg;base64,${post.imageData}`
-        : null;
+    const imageUrl = post.postImage || null;
 
     const getProfilePictureUrl = (user) => {
         if (!user) return 'https://ui-avatars.com/api/?name=User&background=random';
@@ -169,7 +167,14 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             <p className="mt-2 text-gray-700">{post.content}</p>
 
             {imageUrl && (
-                <img src={imageUrl} alt="Post content" className="mt-4 w-full rounded-lg" />
+                <div className="flex justify-center items-center bg-gray-100 rounded-xl my-6 p-2">
+                    <img
+                        src={imageUrl}
+                        alt="Post content"
+                        className="rounded-xl shadow-lg object-cover max-h-[600px] w-auto max-w-full"
+                        style={{ minHeight: '300px' }}
+                    />
+                </div>
             )}
 
             <div className="flex space-x-4 mt-4">
