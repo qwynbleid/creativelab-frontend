@@ -223,7 +223,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                     </form>
 
                     <div className="space-y-4">
-                        {comments.map((comment) => (
+                        {comments.slice().reverse().map((comment) => (
                             <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
                                 <div className="flex items-center space-x-2">
                                     <img 
