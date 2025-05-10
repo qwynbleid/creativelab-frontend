@@ -298,31 +298,19 @@ export const authService = {
 export const profileService = {
     createOrUpdateProfile: async (userId, profileData) => {
         try {
-            console.log('Creating/updating profile for user:', userId);
             const formData = new FormData();
-            
-            // Add all text fields
             formData.append('username', profileData.username);
             formData.append('fullName', profileData.fullName);
             formData.append('bio', profileData.bio);
-            
-            // Add interests as JSON string
-            if (profileData.interests && profileData.interests.length > 0) {
-                formData.append('interests', JSON.stringify(profileData.interests));
+
+            if (profileData.interests) {
+                (Array.isArray(profileData.interests) ? profileData.interests : [profileData.interests])
+                    .forEach(interest => formData.append('interests', interest));
             }
-            
-            // Add profile picture if it exists
+
             if (profileData.profilePicture) {
                 formData.append('profilePicture', profileData.profilePicture);
             }
-
-            console.log('FormData contents:', {
-                username: profileData.username,
-                fullName: profileData.fullName,
-                bio: profileData.bio,
-                hasInterests: !!profileData.interests,
-                hasProfilePicture: !!profileData.profilePicture
-            });
 
             const response = await api.post(`/profile/${userId}`, formData, {
                 headers: {
@@ -337,22 +325,13 @@ export const profileService = {
     },
 
     getProfile: async (userId) => {
-        console.log('Fetching profile for userId:', userId);
         const response = await api.get(`/profile/${userId}`);
         const profile = response.data;
-        
-        console.log('Raw profile data:', {
-            hasProfilePicture: !!profile.profilePicture,
-            profilePictureType: profile.profilePicture ? typeof profile.profilePicture : 'none',
-            isArray: profile.profilePicture ? Array.isArray(profile.profilePicture) : false,
-            length: profile.profilePicture ? profile.profilePicture.length : 0
-        });
-        
-        // Convert byte array to base64 if profile picture exists
+
         if (profile.profilePictureBase64) {
             profile.profilePicture = `data:image/jpeg;base64,${profile.profilePictureBase64}`;
         }
-        
+
         return profile;
     }
-}; 
+};

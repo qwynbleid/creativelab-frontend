@@ -103,14 +103,16 @@ const Profile = () => {
                 .split(',')
                 .map((i) => i.trim())
                 .filter((i) => i.length > 0);
-            const updated = await profileService.updateProfile(
-                userId,
-                formData.username,
-                formData.fullName,
-                formData.bio,
-                formData.profilePicture,
-                interestsArray
-            );
+            
+            const profileData = {
+                username: formData.username,
+                fullName: formData.fullName,
+                bio: formData.bio,
+                profilePicture: formData.profilePicture,
+                interests: interestsArray
+            };
+
+            const updated = await profileService.createOrUpdateProfile(userId, profileData);
             setProfile(updated);
             setEditMode(false);
             setSuccess('Profile updated successfully!');
