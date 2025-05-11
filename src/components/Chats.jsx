@@ -90,6 +90,33 @@ const Chats = () => {
     return () => removeHandler();
   }, [user?.id, selectedChat]);
 
+  // Utility function for consistent avatar resolution
+  const getProfilePictureUrl = (user) => {
+    if (!user) return 'https://ui-avatars.com/api/?name=User&background=random&color=fff';
+    try {
+      if (user.profilePicture) {
+        if (user.profilePicture.startsWith('data:image')) {
+          return user.profilePicture;
+        }
+        if (typeof user.profilePicture === 'string' && user.profilePicture.length > 0) {
+          return `data:image/jpeg;base64,${user.profilePicture}`;
+        }
+      }
+      if (user.profilePictureBase64) {
+        if (user.profilePictureBase64.startsWith('data:image')) {
+          return user.profilePictureBase64;
+        }
+        if (typeof user.profilePictureBase64 === 'string' && user.profilePictureBase64.length > 0) {
+          return `data:image/jpeg;base64,${user.profilePictureBase64}`;
+        }
+      }
+    } catch (error) {
+      console.error('Error processing profile picture:', error);
+    }
+    const name = user.fullName || user.username || 'User';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+  };
+
   // Process messages into chat list
   const processMessagesIntoChats = (messages) => {
     const chatMap = new Map();
@@ -97,11 +124,7 @@ const Chats = () => {
     messages.forEach(msg => {
       const otherUserId = msg.sender.id === user.id ? msg.receiver.id : msg.sender.id;
       const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
-      const avatar = otherUser.profilePicture
-        ? (otherUser.profilePicture.startsWith('data:image')
-            ? otherUser.profilePicture
-            : `data:image/jpeg;base64,${otherUser.profilePicture}`)
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`;
+      const avatar = getProfilePictureUrl(otherUser);
       if (!chatMap.has(otherUserId)) {
         chatMap.set(otherUserId, {
           id: otherUserId,
@@ -224,33 +247,29 @@ const Chats = () => {
     }
   };
 
-  const handleStartChat = async (userId, username) => {
+  const handleStartChat = async (userId, username, profilePicture = null, fullName = null) => {
+    let userProfile = null;
     try {
-      // Fetch user profile to get profilePicture
-      const userProfile = await userService.getUserProfile(userId);
-      const avatar = userProfile.profilePicture
-        ? (userProfile.profilePicture.startsWith('data:image')
-            ? userProfile.profilePicture
-            : `data:image/jpeg;base64,${userProfile.profilePicture}`)
-        : `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.fullName || userProfile.username)}&background=random&color=fff`;
-      const newChat = {
-        id: userId,
-        type: 'direct',
-        name: userProfile.fullName || userProfile.username,
-        lastMessage: '',
-        timestamp: new Date().toLocaleTimeString(),
-        unread: 0,
-        avatar,
-        user: userProfile
-      };
-      setChats(prev => [newChat, ...prev]);
-      setSelectedChat(newChat);
-      setShowNewChat(false);
-      setSearchTerm('');
-      setSearchResults([]);
+      userProfile = await userService.getUserProfile(userId);
     } catch (err) {
-      setError('Failed to start chat');
+      userProfile = { id: userId, username, fullName: fullName || username, profilePicture };
     }
+    const avatar = getProfilePictureUrl(userProfile);
+    const newChat = {
+      id: userId,
+      type: 'direct',
+      name: userProfile.fullName || userProfile.username,
+      lastMessage: '',
+      timestamp: new Date().toLocaleTimeString(),
+      unread: 0,
+      avatar,
+      user: userProfile
+    };
+    setChats(prev => [newChat, ...prev]);
+    setSelectedChat(newChat);
+    setShowNewChat(false);
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   const formatMessageTime = (timestamp) => {
@@ -343,7 +362,7 @@ const Chats = () => {
                 <div
                   key={user.id}
                   className="search-result-item"
-                  onClick={() => handleStartChat(user.id, user.fullName || user.username)}
+                  onClick={() => handleStartChat(user.id, user.fullName || user.username, user.profilePicture, user.fullName)}
                 >
                   <img
                     src={user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username)}&background=random&color=fff`}
