@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { profileService, postService } from '../services/api';
+import { profileService, postService, userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from './Navbar';
 import Post from './Post';
@@ -36,6 +36,9 @@ const Profile = () => {
     const [posts, setPosts] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
+    const [isFollowing, setIsFollowing] = useState(false);
+
+    const isOwnProfile = user && profile && (user.id === profile.id || user.id === profile.userId);
 
     useEffect(() => {
         if (userId) {
@@ -44,6 +47,12 @@ const Profile = () => {
             fetchFollowStats();
         }
     }, [userId]);
+
+    useEffect(() => {
+        if (user && profile && !isOwnProfile) {
+            checkIfFollowing();
+        }
+    }, [user, profile, isOwnProfile]);
 
     const fetchProfile = async () => {
         setLoading(true);
@@ -89,6 +98,35 @@ const Profile = () => {
         } catch (err) {
             console.error('Error fetching follow stats:', err);
         }
+    };
+
+    const checkIfFollowing = async () => {
+        try {
+            const followingList = await userService.getFollowing(user.id);
+            setIsFollowing(
+                followingList.some(
+                    u => String(u.id) === String(profile.id) || String(u.id) === String(profile.userId)
+                )
+            );
+        } catch (err) {
+            setIsFollowing(false);
+        }
+    };
+
+    const handleFollow = async () => {
+        try {
+            await userService.followUser(user.id, profile.username);
+            setIsFollowing(true);
+            fetchFollowStats();
+        } catch (err) {}
+    };
+
+    const handleUnfollow = async () => {
+        try {
+            await userService.unfollowUser(user.id, profile.username);
+            setIsFollowing(false);
+            fetchFollowStats();
+        } catch (err) {}
     };
 
     const handleChange = (e) => {
@@ -163,7 +201,7 @@ const Profile = () => {
                 <div className="max-w-6xl mx-auto px-4 mt-8">
                     <div className="bg-white rounded-2xl shadow-lg p-8 relative">
                         {/* Static Edit Profile Button (top right) */}
-                        {!editMode && (
+                        {isOwnProfile && !editMode && (
                             <button
                                 className="absolute top-4 right-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-full p-2 shadow transition"
                                 onClick={() => setEditMode(true)}
@@ -173,6 +211,26 @@ const Profile = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487a2.1 2.1 0 1 1 2.97 2.97L7.5 19.789l-4 1 1-4 14.362-14.302z" />
                                 </svg>
                             </button>
+                        )}
+                        {/* Follow/Unfollow Button (top right for other users) */}
+                        {!isOwnProfile && user && (
+                            <div className="absolute top-4 right-4">
+                                {isFollowing ? (
+                                    <button
+                                        onClick={handleUnfollow}
+                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300 transition"
+                                    >
+                                        Unfollow
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleFollow}
+                                        className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition"
+                                    >
+                                        Follow
+                                    </button>
+                                )}
+                            </div>
                         )}
                         {/* Profile Header and Info */}
                         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -212,7 +270,11 @@ const Profile = () => {
 
                 {/* Posts Section */}
                 <div className="max-w-6xl mx-auto px-4 mt-8">
-                    <h3 className="text-2xl font-bold mb-6 text-gray-800">My Posts</h3>
+                    <h3 className="text-2xl font-bold mb-6 text-gray-800">
+                        {isOwnProfile
+                            ? 'My Posts'
+                            : `${profile.username ? profile.username + "'s" : 'User'} Posts`}
+                    </h3>
                     <div className="flex flex-col gap-6">
                         {posts.length === 0 ? (
                             <div className="text-center text-gray-400 bg-white rounded-xl p-8 shadow-md">
@@ -231,6 +293,7 @@ const Profile = () => {
                                         post={post}
                                         currentUserId={user?.id}
                                         onPostUpdate={() => fetchPosts()}
+                                        canDelete={isOwnProfile}
                                     />
                                 ))
                         )}

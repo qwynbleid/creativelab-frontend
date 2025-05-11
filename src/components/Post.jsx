@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { postService } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { initializeIcons, updateIcons } from '../utils/icons';
+import { Link } from 'react-router-dom';
 
 const Post = ({ post, currentUserId, onPostUpdate }) => {
     const [comments, setComments] = useState([]);
@@ -205,24 +206,26 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             )}
 
             <div className="flex items-center space-x-4">
-                <img 
-                    src={getProfilePictureUrl(post.user)}
-                    alt={`${post.user?.username || 'User'}'s avatar`} 
-                    className="w-12 h-12 rounded-full"
-                    onError={(e) => {
-                        console.error('Profile picture failed to load:', {
-                            src: e.target.src,
-                            user: post.user
-                        });
-                        e.target.src = 'https://via.placeholder.com/50';
-                    }}
-                />
-                <div>
-                    <h2 className="font-semibold text-gray-800">{post.user?.fullName || 'Unknown User'}</h2>
-                    <p className="text-sm text-gray-500">
-                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-                    </p>
-                </div>
+                <Link to={post.user ? `/profile/${post.user.id}` : '#'} className="flex items-center space-x-4 group">
+                    <img 
+                        src={getProfilePictureUrl(post.user)}
+                        alt={`${post.user?.username || 'User'}'s avatar`} 
+                        className="w-12 h-12 rounded-full group-hover:ring-2 group-hover:ring-indigo-400 transition"
+                        onError={(e) => {
+                            console.error('Profile picture failed to load:', {
+                                src: e.target.src,
+                                user: post.user
+                            });
+                            e.target.src = 'https://via.placeholder.com/50';
+                        }}
+                    />
+                    <div>
+                        <h2 className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">{post.user?.fullName || 'Unknown User'}</h2>
+                        <p className="text-sm text-gray-500">
+                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                        </p>
+                    </div>
+                </Link>
             </div>
 
             <div className={`mt-4 ${!imageUrl ? 'mb-4' : ''}`}>
