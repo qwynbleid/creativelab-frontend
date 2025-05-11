@@ -60,14 +60,15 @@
   transition: background-color 0.2s;
   position: relative;
   border-bottom: 1px solid #2d2d2d;
+  background: none;
 }
 
 .chat-item:hover {
-  background-color: #2d2d2d;
+  background-color: #232323;
 }
 
 .chat-item.active {
-  background-color: #2d2d2d;
+  background-color: #232323;
   border-left: 3px solid #ec4899;
 }
 
@@ -77,29 +78,40 @@
   border-radius: 50%;
   margin-right: 12px;
   border: 2px solid #ec4899;
+  background: #232323;
 }
 
 .chat-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  background: none;
 }
 
 .chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 4px;
+  display: block;
+  margin-bottom: 0;
+  background: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 .chat-header h3 {
   margin: 0;
   font-size: 1rem;
-  color: #ffffff;
+  color: #fff;
+  font-weight: 700;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  line-height: 1.2;
 }
 
 .timestamp {
-  font-size: 0.75rem;
-  color: #9ca3af;
+  display: none;
 }
 
 .last-message {
@@ -109,6 +121,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: none;
+  font-weight: 400;
 }
 
 .unread-badge {

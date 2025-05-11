@@ -32,13 +32,11 @@ const Chats = () => {
     if (!user?.id) return;
 
     const handleNewMessage = (msg) => {
-      // Normalize sender/receiver
       const message = {
         ...msg,
         sender: msg.sender || { id: msg.senderId },
         receiver: msg.receiver || { id: msg.receiverId },
       };
-
       setMessages(prev => {
         if (!message.id || prev.some(m => m.id === message.id)) return prev;
         return [...prev, message];
@@ -47,6 +45,44 @@ const Chats = () => {
         const newSet = new Set(prev);
         if (message.id) newSet.add(message.id);
         return newSet;
+      });
+      // Update chat preview in sidebar (only lastMessage and timestamp)
+      setChats(prevChats => {
+        const otherUser = message.sender.id === user.id ? message.receiver : message.sender;
+        let updated = false;
+        const updatedChats = prevChats.map(chat => {
+          if (chat.id === otherUser.id) {
+            updated = true;
+            return {
+              ...chat,
+              lastMessage: message.content,
+              timestamp: new Date(message.timestamp).toLocaleTimeString(),
+              // avatar remains unchanged
+            };
+          }
+          return chat;
+        });
+        // If chat not found, add it (with avatar)
+        if (!updated) {
+          const avatar = otherUser.profilePicture
+            ? (otherUser.profilePicture.startsWith('data:image')
+                ? otherUser.profilePicture
+                : (otherUser.profilePicture.length > 30
+                    ? `data:image/jpeg;base64,${otherUser.profilePicture}`
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`))
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`;
+          updatedChats.unshift({
+            id: otherUser.id,
+            type: 'direct',
+            name: otherUser.fullName || otherUser.username,
+            lastMessage: message.content,
+            timestamp: new Date(message.timestamp).toLocaleTimeString(),
+            unread: 0,
+            avatar,
+            user: otherUser
+          });
+        }
+        return updatedChats;
       });
     };
 
@@ -61,7 +97,11 @@ const Chats = () => {
     messages.forEach(msg => {
       const otherUserId = msg.sender.id === user.id ? msg.receiver.id : msg.sender.id;
       const otherUser = msg.sender.id === user.id ? msg.receiver : msg.sender;
-      
+      const avatar = otherUser.profilePicture
+        ? (otherUser.profilePicture.startsWith('data:image')
+            ? otherUser.profilePicture
+            : `data:image/jpeg;base64,${otherUser.profilePicture}`)
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`;
       if (!chatMap.has(otherUserId)) {
         chatMap.set(otherUserId, {
           id: otherUserId,
@@ -70,8 +110,8 @@ const Chats = () => {
           lastMessage: msg.content,
           timestamp: new Date(msg.timestamp).toLocaleTimeString(),
           unread: 0,
-          avatar: otherUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`,
-          user: otherUser // Store the full user object for reference
+          avatar,
+          user: otherUser
         });
       } else {
         // Update existing chat with latest message
@@ -80,7 +120,8 @@ const Chats = () => {
           chatMap.set(otherUserId, {
             ...existingChat,
             lastMessage: msg.content,
-            timestamp: new Date(msg.timestamp).toLocaleTimeString()
+            timestamp: new Date(msg.timestamp).toLocaleTimeString(),
+            avatar
           });
         }
       }
@@ -185,17 +226,23 @@ const Chats = () => {
 
   const handleStartChat = async (userId, username) => {
     try {
-      // Create a new chat entry
+      // Fetch user profile to get profilePicture
+      const userProfile = await userService.getUserProfile(userId);
+      const avatar = userProfile.profilePicture
+        ? (userProfile.profilePicture.startsWith('data:image')
+            ? userProfile.profilePicture
+            : `data:image/jpeg;base64,${userProfile.profilePicture}`)
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.fullName || userProfile.username)}&background=random&color=fff`;
       const newChat = {
         id: userId,
         type: 'direct',
-        name: username,
+        name: userProfile.fullName || userProfile.username,
         lastMessage: '',
         timestamp: new Date().toLocaleTimeString(),
         unread: 0,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`
+        avatar,
+        user: userProfile
       };
-
       setChats(prev => [newChat, ...prev]);
       setSelectedChat(newChat);
       setShowNewChat(false);
@@ -228,6 +275,32 @@ const Chats = () => {
       fileInputRef.current.value = '';
     }
   };
+
+  // After setMessages, recalculate chat previews
+  useEffect(() => {
+    if (!user) return;
+    setChats(prevChats => {
+      // Build a map of latest message per chat
+      const latestByChat = {};
+      messages.forEach(msg => {
+        const otherUserId = msg.sender.id === user.id ? msg.receiver.id : msg.sender.id;
+        if (!latestByChat[otherUserId] || new Date(msg.timestamp) > new Date(latestByChat[otherUserId].timestamp)) {
+          latestByChat[otherUserId] = msg;
+        }
+      });
+      return prevChats.map(chat => {
+        const latest = latestByChat[chat.id];
+        if (latest) {
+          return {
+            ...chat,
+            lastMessage: latest.content,
+            timestamp: new Date(latest.timestamp).toLocaleTimeString(),
+          };
+        }
+        return chat;
+      });
+    });
+  }, [messages, user]);
 
   if (loading) {
     return <div className="chats-container flex items-center justify-center">
@@ -298,12 +371,9 @@ const Chats = () => {
                   onClick={() => setSelectedChat(chat)}
                 >
                   <img src={chat.avatar} alt={chat.name} className="chat-avatar" />
-                  <div className="chat-info">
-                    <div className="chat-header">
-                      <h3>{chat.name}</h3>
-                      <span className="timestamp">{chat.timestamp}</span>
-                    </div>
-                    <p className="last-message">{chat.lastMessage}</p>
+                  <div className="chat-info" style={{ display: 'flex', alignItems: 'start', gap: '8px', marginLeft: '4px', justifyContent: 'flex-start' }}>
+                    <span className="chat-name" style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>{chat.name}</span>
+                    <span className="last-message" style={{ color: '#9ca3af', fontSize: '0.95rem', fontWeight: 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{chat.lastMessage}</span>
                   </div>
                   {chat.unread > 0 && (
                     <span className="unread-badge">{chat.unread}</span>
@@ -333,7 +403,6 @@ const Chats = () => {
               <img src={selectedChat.avatar} alt={selectedChat.name} className="chat-avatar" />
               <div className="chat-header-info">
                 <h2>{selectedChat.name}</h2>
-                <span className="chat-status">Online</span>
               </div>
             </div>
 
