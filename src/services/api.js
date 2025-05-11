@@ -333,5 +333,15 @@ export const profileService = {
         }
 
         return profile;
-    }
+    },
+
+    getFollowStats: async (userId) => {
+        try {
+            const response = await api.get(`/users/${userId}/follow-stats`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching follow stats:', error);
+            throw error;
+        }
+    },
 };

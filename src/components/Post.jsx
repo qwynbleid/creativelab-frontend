@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { postService } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { initializeIcons, updateIcons } from '../utils/icons';
@@ -10,6 +11,9 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(post.likesCount || 0);
     const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const menuRef = useRef(null);
 
     // Initialize icons when component mounts
     useEffect(() => {
@@ -58,6 +62,17 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
         });
         loadComments();
     }, [post.id]);
+
+    useEffect(() => {
+        if (!showMenu || showDeleteConfirm) return;
+        function handleClickOutside(event) {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowMenu(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showMenu, showDeleteConfirm]);
 
     const loadComments = async () => {
         try {
@@ -111,6 +126,17 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            await postService.deletePost(post.id);
+            if (onPostUpdate) {
+                onPostUpdate();
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        }
+    };
+
     const imageUrl = post.postImage || null;
 
     const getProfilePictureUrl = (user) => {
@@ -146,8 +172,38 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
     };
 
+    const closeModal = () => {
+        setShowDeleteConfirm(false);
+        setShowMenu(false);
+    };
+
     return (
-        <div className="post-card bg-white rounded-2xl p-6 shadow-lg">
+        <div className="post-card bg-white rounded-2xl p-6 shadow-lg w-full max-w-2xl mx-auto relative">
+            {/* Three-dot menu for post owner */}
+            {post.user && post.user.id === currentUserId && (
+                <div className="absolute top-4 right-4 z-10" ref={menuRef}>
+                    <button
+                        onClick={() => setShowMenu((v) => !v)}
+                        className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+                        title="More options"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
+                    </button>
+                    {showMenu && (
+                        <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+                            <button
+                                onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }}
+                                className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="flex items-center space-x-4">
                 <img 
                     src={getProfilePictureUrl(post.user)}
@@ -169,21 +225,22 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                 </div>
             </div>
 
-            <h3 className="mt-4 text-xl font-semibold text-gray-800">{post.title}</h3>
-            <p className="mt-2 text-gray-700">{post.content}</p>
+            <div className={`mt-4 ${!imageUrl ? 'mb-4' : ''}`}>
+                <h3 className="text-xl font-semibold text-gray-800">{post.title}</h3>
+                <p className="mt-2 text-gray-700 whitespace-pre-wrap break-words">{post.content}</p>
+            </div>
 
             {imageUrl && (
                 <div className="flex justify-center items-center bg-gray-100 rounded-xl my-6 p-2">
                     <img
                         src={imageUrl}
                         alt="Post content"
-                        className="rounded-xl shadow-lg object-cover max-h-[600px] w-auto max-w-full"
-                        style={{ minHeight: '300px' }}
+                        className="rounded-xl shadow-lg object-contain max-h-[600px] w-full"
                     />
                 </div>
             )}
 
-            <div className="flex space-x-4 mt-4">
+            <div className={`flex space-x-4 ${!imageUrl ? 'mt-2' : 'mt-4'}`}>
                 <button 
                     onClick={handleLike}
                     className={`flex items-center space-x-2 transition-colors duration-200 ${
@@ -248,6 +305,40 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                         ))}
                     </div>
                 </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && ReactDOM.createPortal(
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+                    onClick={closeModal}
+                >
+                    <div
+                        className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h3 className="text-xl font-semibold text-gray-900 mb-4">Delete Post</h3>
+                        <p className="text-gray-600 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    handleDelete();
+                                    closeModal();
+                                }}
+                                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
             )}
         </div>
     );
