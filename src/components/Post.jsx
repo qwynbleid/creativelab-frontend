@@ -193,10 +193,10 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                         </svg>
                     </button>
                     {showMenu && (
-                        <div className="absolute right-0 mt-2 w-32 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-1">
+                        <div className="absolute right-0 mt-2 w-32 bg-card-dark border border-gray-700 rounded-lg shadow-lg py-1">
                             <button
                                 onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }}
-                                className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700"
+                                className="block w-full text-left px-4 py-2 text-red-400 hover:bg-pink-700 hover:text-white rounded-md transition-colors"
                             >
                                 Delete
                             </button>
@@ -319,9 +319,9 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
 
             {showDeleteConfirm && ReactDOM.createPortal(
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                    <div className="bg-card-dark p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
                         <h3 className="text-xl font-semibold text-gray-200 mb-4">Delete Post</h3>
-                        <p className="text-gray-300 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                        <p className="text-gray-400 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={closeModal}
@@ -330,10 +330,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
-                                    handleDelete();
-                                    closeModal();
-                                }}
+                                onClick={() => { handleDelete(); closeModal(); }}
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             >
                                 Delete
