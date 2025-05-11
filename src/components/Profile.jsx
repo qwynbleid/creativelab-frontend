@@ -194,9 +194,9 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
             <Navbar />
-            <div className="pt-16 mb-16">
+            <div className="flex-grow pt-16 mb-16">
                 {/* Profile Header Section */}
                 <div className="max-w-6xl mx-auto px-4 mt-8">
                     <div className="bg-white rounded-2xl shadow-lg p-8 relative">
@@ -449,7 +449,7 @@ const Profile = () => {
                 </div>
             )}
 
-            <footer className="bg-gray-800 text-white py-6 relative z-10">
+            <footer className="bg-gray-800 text-white py-6 relative z-10 mt-auto">
                 <div className="container mx-auto px-4 text-center">
                     <p className="mb-4">CreativeHub &copy; 2025</p>
                     <div className="flex justify-center space-x-4">

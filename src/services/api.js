@@ -238,6 +238,16 @@ export const userService = {
             return [];
         }
     },
+
+    searchUsers: async (searchTerm) => {
+        try {
+            const response = await api.get('/users/search', { params: { searchTerm } });
+            return Array.isArray(response.data) ? response.data : [];
+        } catch (error) {
+            console.error('Error searching users:', error);
+            return [];
+        }
+    },
 };
 
 export const authService = {

@@ -3,12 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import reactLogo from '../assets/react.svg';
 import { initializeIcons, updateIcons } from '../utils/icons';
+import { userService } from '../services/api';
+
+// Debounce hook for instant search
+function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
+    }, [value, delay]);
+    return debouncedValue;
+}
 
 const Navbar = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+    const searchRef = useRef(null);
+    const [showSearchInput, setShowSearchInput] = useState(false);
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     // Initialize icons when component mounts
     useEffect(() => {
@@ -43,6 +60,47 @@ const Navbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Close search dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowSearchDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Instant search as user types
+    useEffect(() => {
+        const doSearch = async () => {
+            if (debouncedSearchTerm.trim()) {
+                const results = await userService.searchUsers(debouncedSearchTerm.trim());
+                setSearchResults(results);
+                setShowSearchDropdown(true);
+            } else {
+                setSearchResults([]);
+                setShowSearchDropdown(false);
+            }
+        };
+        if (showSearchInput) doSearch();
+    }, [debouncedSearchTerm, showSearchInput]);
+
+    // Hide input/results on Escape
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setShowSearchInput(false);
+                setShowSearchDropdown(false);
+                setSearchTerm('');
+            }
+        };
+        if (showSearchInput) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [showSearchInput]);
+
     const handleLogout = () => {
         logout();
         navigate('/login');
@@ -56,6 +114,26 @@ const Navbar = () => {
         e.target.onerror = null;
         e.target.src = reactLogo;
     };
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!searchTerm.trim()) return;
+        const results = await userService.searchUsers(searchTerm.trim());
+        setSearchResults(results);
+        setShowSearchDropdown(true);
+    };
+
+    const handleResultClick = (userId) => {
+        setShowSearchDropdown(false);
+        setSearchTerm('');
+        setSearchResults([]);
+        navigate(`/profile/${userId}`);
+    };
+
+    // Filter out the logged-in user from search results
+    const filteredSearchResults = user
+        ? searchResults.filter(u => String(u.id) !== String(user.id))
+        : searchResults;
 
     return (
         <nav className="navbar fixed top-0 w-full z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
@@ -80,6 +158,61 @@ const Navbar = () => {
                             <i data-feather="message-circle" className="w-5 h-5" data-feather-replace></i>
                             <span>Chat</span>
                         </Link>
+
+                        {/* Search Icon Button with label */}
+                        <button
+                            className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
+                            onClick={() => {
+                                setShowSearchInput((v) => !v);
+                                setTimeout(() => {
+                                    if (!showSearchInput && searchRef.current) {
+                                        const input = searchRef.current.querySelector('input');
+                                        if (input) input.focus();
+                                    }
+                                }, 100);
+                            }}
+                            title="Search users"
+                        >
+                            <i data-feather="search" className="w-5 h-5" data-feather-replace></i>
+                            <span>Search Users</span>
+                        </button>
+
+                        {/* User Search Input and Results */}
+                        {showSearchInput && (
+                            <div className="relative" ref={searchRef}>
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    placeholder="Search users..."
+                                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm min-w-[220px]"
+                                    autoFocus
+                                />
+                                {showSearchDropdown && (
+                                    <div className="absolute left-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                                        {filteredSearchResults.length > 0 ? filteredSearchResults.map(user => (
+                                            <div
+                                                key={user.id}
+                                                className="flex items-center gap-3 px-4 py-2 hover:bg-indigo-50 cursor-pointer"
+                                                onClick={() => handleResultClick(user.id)}
+                                            >
+                                                <img
+                                                    src={user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username)}&background=random&color=fff`}
+                                                    alt={user.username}
+                                                    className="w-8 h-8 rounded-full object-cover border"
+                                                />
+                                                <div>
+                                                    <div className="font-semibold text-gray-800">{user.fullName}</div>
+                                                    <div className="text-xs text-gray-500">@{user.username}</div>
+                                                </div>
+                                            </div>
+                                        )) : (
+                                            <div className="px-4 py-2 text-gray-500">No users found.</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {user && (
                             <div className="relative" ref={dropdownRef}>
