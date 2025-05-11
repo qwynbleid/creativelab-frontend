@@ -2,6 +2,65 @@ import axios from 'axios';
 
 // Use relative path and let Vite's proxy handle the CORS
 const API_URL = 'http://localhost:8080/api/messages';
+const WS_URL = 'ws://localhost:8080/ws/chat';
+
+// WebSocket connection
+let socket = null;
+let messageHandlers = new Set();
+
+const initializeWebSocket = (userId) => {
+    if (socket) {
+        socket.close();
+    }
+
+    try {
+        socket = new WebSocket(`${WS_URL}?userId=${userId}`);
+
+        socket.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                messageHandlers.forEach(handler => handler(message));
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            // Don't try to reconnect on error, let onclose handle it
+        };
+
+        socket.onclose = (event) => {
+            console.log('WebSocket connection closed:', event.code, event.reason);
+            // Only attempt to reconnect if the connection was not closed normally
+            if (event.code !== 1000) {
+                console.log('Attempting to reconnect in 5 seconds...');
+                setTimeout(() => {
+                    if (userId) {  // Only reconnect if we still have a userId
+                        initializeWebSocket(userId);
+                    }
+                }, 5000);
+            }
+        };
+    } catch (error) {
+        console.error('Error initializing WebSocket:', error);
+        // Attempt to reconnect after error
+        setTimeout(() => {
+            if (userId) {
+                initializeWebSocket(userId);
+            }
+        }, 5000);
+    }
+};
+
+const addMessageHandler = (handler) => {
+    messageHandlers.add(handler);
+    return () => messageHandlers.delete(handler);
+};
 
 // Get token from localStorage
 const getAuthToken = () => {
@@ -102,6 +161,10 @@ const compressImage = async (file) => {
 };
 
 export const messageService = {
+    // Initialize WebSocket connection
+    initializeWebSocket,
+    addMessageHandler,
+
     // Send a new message
     sendMessage: async (senderId, receiverId, content, imageFile = null) => {
         try {
@@ -114,27 +177,22 @@ export const messageService = {
                 }
             }
 
-            console.log('Sending message with data:', { 
-                senderId, 
-                receiverId, 
-                content,
-                hasImage: !!imageBase64,
-                imageSize: imageBase64 ? imageBase64.length : 0
-            });
-
-            const response = await axiosInstance.post(`${API_URL}/send`, {
+            const messageData = {
                 senderId,
                 receiverId,
                 content,
-                imageBase64
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity
-            });
-            return response.data;
+                imageBase64,
+                type: imageBase64 ? (content ? 'text_and_image' : 'image') : 'text'
+            };
+
+            // Send through WebSocket only
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(messageData));
+            } else {
+                throw new Error('WebSocket is not connected');
+            }
+            // Do not call REST API here!
+            // The message will be added to the UI when received via WebSocket.
         } catch (error) {
             console.error('Error sending message:', error);
             if (error.response?.status === 431) {
@@ -188,13 +246,7 @@ export const messageService = {
     getMessagesForUser: async (userId) => {
         try {
             console.log('Fetching messages for user:', userId);
-            const response = await axiosInstance.get(`${API_URL}/for/${userId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity
-            });
+            const response = await axiosInstance.get(`${API_URL}/for/${userId}`);
             
             // Process the messages to ensure proper base64 formatting
             const messages = response.data.map(msg => ({

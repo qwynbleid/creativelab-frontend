@@ -18,6 +18,41 @@ const Chats = () => {
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
+  const [processedMessageIds, setProcessedMessageIds] = useState(new Set());
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (user?.id) {
+      messageService.initializeWebSocket(user.id);
+    }
+  }, [user?.id]);
+
+  // Handle incoming WebSocket messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const handleNewMessage = (msg) => {
+      // Normalize sender/receiver
+      const message = {
+        ...msg,
+        sender: msg.sender || { id: msg.senderId },
+        receiver: msg.receiver || { id: msg.receiverId },
+      };
+
+      setMessages(prev => {
+        if (!message.id || prev.some(m => m.id === message.id)) return prev;
+        return [...prev, message];
+      });
+      setProcessedMessageIds(prev => {
+        const newSet = new Set(prev);
+        if (message.id) newSet.add(message.id);
+        return newSet;
+      });
+    };
+
+    const removeHandler = messageService.addMessageHandler(handleNewMessage);
+    return () => removeHandler();
+  }, [user?.id, selectedChat]);
 
   // Process messages into chat list
   const processMessagesIntoChats = (messages) => {
@@ -133,50 +168,15 @@ const Chats = () => {
     e.preventDefault();
     if ((message.trim() || selectedImage) && selectedChat) {
       try {
-        const newMessage = await messageService.sendMessage(
+        await messageService.sendMessage(
           user.id,
           selectedChat.id,
           message.trim(),
           selectedImage
         );
-        
-        // Update messages list
-        setMessages(prev => [...prev, newMessage]);
         setMessage('');
         setSelectedImage(null);
-        
-        // Update chat list with new message
-        setChats(prev => {
-          const updatedChats = prev.map(chat => 
-            chat.id === selectedChat.id 
-              ? { 
-                  ...chat, 
-                  lastMessage: newMessage.content || 'Sent an image',
-                  timestamp: new Date(newMessage.timestamp).toLocaleTimeString() 
-                }
-              : chat
-          );
-          
-          // If this is a new chat, add it to the list
-          if (!prev.some(chat => chat.id === selectedChat.id)) {
-            const otherUser = newMessage.sender.id === user.id ? newMessage.receiver : newMessage.sender;
-            updatedChats.unshift({
-              id: selectedChat.id,
-              type: 'direct',
-              name: otherUser.fullName || otherUser.username,
-              lastMessage: newMessage.content || 'Sent an image',
-              timestamp: new Date(newMessage.timestamp).toLocaleTimeString(),
-              unread: 0,
-              avatar: otherUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.fullName || otherUser.username)}&background=random&color=fff`,
-              user: otherUser
-            });
-          }
-          
-          // Sort chats by timestamp
-          return updatedChats.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-          );
-        });
+        // Do not add to messages here; wait for WebSocket
       } catch (err) {
         setError('Failed to send message');
       }
@@ -340,32 +340,34 @@ const Chats = () => {
             <div className="messages-container">
               {messages.length > 0 ? (
                 messages
-                  .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-                  .map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`message ${msg.sender.id === user.id ? 'sent' : 'received'}`}
-                  >
-                    <div className="message-content">
-                      {msg.content}
-                      {msg.imageBase64 && (
-                        <img 
-                          src={`data:image/jpeg;base64,${msg.imageBase64}`} 
-                          alt="Message attachment" 
-                          className="message-image"
-                          onError={(e) => {
-                            console.error('Failed to load message image:', e);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      )}
-                    </div>
-                    <span className="message-time">{formatMessageTime(msg.timestamp)}</span>
-                  </div>
-                ))
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                    .map((msg) => (
+                        <div
+                            key={msg.id || Math.random()}
+                            className={`message ${msg.sender?.id === user.id ? 'sent' : 'received'}`}
+                        >
+                            <div className="message-content">
+                                {msg.content}
+                                {msg.imageBase64 && (
+                                    <img 
+                                        src={`data:image/jpeg;base64,${msg.imageBase64}`} 
+                                        alt="Message attachment" 
+                                        className="message-image"
+                                        onError={(e) => {
+                                            console.error('Failed to load message image:', e);
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                )}
+                            </div>
+                            <span className="message-time">
+                                {formatMessageTime(msg.timestamp)}
+                            </span>
+                        </div>
+                    ))
               ) : (
                 <div className="no-messages">
-                  <p>No messages yet. Start the conversation!</p>
+                    <p>No messages yet. Start the conversation!</p>
                 </div>
               )}
               <div ref={messagesEndRef} />
