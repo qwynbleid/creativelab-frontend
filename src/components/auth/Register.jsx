@@ -31,19 +31,19 @@ function Register() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-sm p-10 rounded-2xl shadow-2xl border border-white/20">
+        <div className="min-h-screen flex items-center justify-center app-dark-bg py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-card-dark backdrop-blur-sm p-10 rounded-2xl shadow-2xl border border-gray-700">
                 <div>
-                    <h2 className="mt-2 text-center text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    <h2 className="mt-2 text-center text-4xl font-extrabold bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">
                         Join CreativeLab
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-center text-sm text-gray-400">
                         Create your account and start sharing your creativity
                     </p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md shadow-sm" role="alert">
+                    <div className="bg-red-900/50 border-l-4 border-red-400 p-4 rounded-md shadow-sm" role="alert">
                         <div className="flex">
                             <div className="flex-shrink-0">
                                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -51,7 +51,7 @@ function Register() {
                                 </svg>
                             </div>
                             <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
+                                <p className="text-sm text-red-300">{error}</p>
                             </div>
                         </div>
                     </div>
@@ -60,7 +60,7 @@ function Register() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                                 Email address
                             </label>
                             <div className="mt-1 relative">
@@ -76,7 +76,7 @@ function Register() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
+                                    className="appearance-none block w-full pl-10 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-200 sm:text-sm transition duration-150 ease-in-out"
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -85,7 +85,7 @@ function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                                 Password
                             </label>
                             <div className="mt-1 relative">
@@ -100,7 +100,7 @@ function Register() {
                                     type="password"
                                     autoComplete="new-password"
                                     required
-                                    className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
+                                    className="appearance-none block w-full pl-10 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-200 sm:text-sm transition duration-150 ease-in-out"
                                     placeholder="Create a password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -109,7 +109,7 @@ function Register() {
                         </div>
 
                         <div>
-                            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">
                                 Confirm Password
                             </label>
                             <div className="mt-1 relative">
@@ -124,7 +124,7 @@ function Register() {
                                     type="password"
                                     autoComplete="new-password"
                                     required
-                                    className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
+                                    className="appearance-none block w-full pl-10 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-200 sm:text-sm transition duration-150 ease-in-out"
                                     placeholder="Confirm your password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -137,7 +137,7 @@ function Register() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out transform hover:scale-[1.02] shadow-lg"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition duration-150 ease-in-out transform hover:scale-[1.02] shadow-lg"
                         >
                             {loading ? (
                                 <div className="flex items-center">
@@ -154,9 +154,9 @@ function Register() {
                     </div>
 
                     <div className="text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-400">
                             Already have an account?{' '}
-                            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150 ease-in-out">
+                            <Link to="/login" className="font-medium text-pink-400 hover:text-pink-300 transition duration-150 ease-in-out">
                                 Sign in
                             </Link>
                         </p>

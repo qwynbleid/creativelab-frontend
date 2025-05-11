@@ -3,7 +3,7 @@ import { postService } from '../services/api';
 import Post from './Post';
 import { useAuth } from '../contexts/AuthContext';
 
-const Feed = () => {
+const RecommendedPosts = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -11,34 +11,29 @@ const Feed = () => {
 
     useEffect(() => {
         if (user?.id) {
-            loadFeed();
+            loadRecommendations();
         }
     }, [user?.id]);
 
-    const loadFeed = async () => {
+    const loadRecommendations = async () => {
         try {
             setLoading(true);
-            const feedData = await postService.getUserFeed(user.id);
-            // Ensure feedData is an array
-            setPosts(Array.isArray(feedData) ? feedData : []);
+            const recData = await postService.getRecommendedPosts(user.id);
+            setPosts(Array.isArray(recData) ? recData : []);
             setError(null);
         } catch (error) {
-            console.error('Error loading feed:', error);
-            setError('Failed to load feed. Please try again later.');
+            console.error('Error loading recommendations:', error);
+            setError('Failed to load recommendations. Please try again later.');
             setPosts([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const handlePostUpdate = () => {
-        loadFeed();
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
             </div>
         );
     }
@@ -54,11 +49,11 @@ const Feed = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-4xl font-bold text-center text-gray-200 mb-12">
-                Welcome to the Creative Community
+                Recommended for You
             </h1>
             {!posts || posts.length === 0 ? (
                 <div className="text-center text-gray-400 p-4">
-                    No posts yet. Follow some creators to see their content here!
+                    No recommendations yet. Interact more to get personalized suggestions!
                 </div>
             ) : (
                 posts.map((post) => (
@@ -73,4 +68,4 @@ const Feed = () => {
     );
 };
 
-export default Feed; 
+export default RecommendedPosts; 

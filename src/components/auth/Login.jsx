@@ -43,25 +43,25 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-sm p-10 rounded-2xl shadow-2xl border border-white/20">
-                <h2 className="mt-2 text-center text-4xl font-extrabold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+        <div className="min-h-screen flex items-center justify-center app-dark-bg py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-card-dark backdrop-blur-sm p-10 rounded-2xl shadow-2xl border border-gray-700">
+                <h2 className="mt-2 text-center text-4xl font-extrabold text-transparent bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text">
                     Welcome Back
                 </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
+                <p className="mt-2 text-center text-sm text-gray-400">
                     Sign in to your account
                 </p>
 
                 {error && (
-                    <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md shadow-sm" role="alert">
-                        <p className="text-sm text-red-700">{error}</p>
+                    <div className="bg-red-900/50 border-l-4 border-red-400 p-4 rounded-md shadow-sm" role="alert">
+                        <p className="text-sm text-red-300">{error}</p>
                     </div>
                 )}
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
                             <input
                                 id="email"
                                 name="email"
@@ -69,13 +69,13 @@ const Login = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none"
+                                className="appearance-none block w-full px-4 py-3 bg-card-dark border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-gray-100 placeholder-gray-500 transition-colors"
                                 placeholder="Enter your email"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password</label>
                             <input
                                 id="password"
                                 name="password"
@@ -83,7 +83,7 @@ const Login = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
-                                className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none"
+                                className="appearance-none block w-full px-4 py-3 bg-card-dark border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-gray-100 placeholder-gray-500 transition-colors"
                                 placeholder="Enter your password"
                             />
                         </div>
@@ -92,18 +92,18 @@ const Login = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 px-4 bg-indigo-600 text-white rounded-md focus:outline-none hover:bg-indigo-700 disabled:opacity-50"
+                        className="w-full py-3 px-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-md focus:outline-none hover:from-pink-700 hover:to-purple-700 disabled:opacity-50 transition-colors"
                     >
                         {loading ? 'Signing in...' : 'Sign in'}
                     </button>
 
                     <div className="text-center mt-4">
-                        <Link to="/forgot-password" className="text-indigo-600">Forgot your password?</Link>
+                        <Link to="/forgot-password" className="text-pink-400 hover:text-pink-300 transition-colors">Forgot your password?</Link>
                     </div>
                     <div className="text-center mt-4">
-                        <p>
+                        <p className="text-gray-400">
                             Don't have an account?{' '}
-                            <Link to="/register" className="text-indigo-600">Sign up</Link>
+                            <Link to="/register" className="text-pink-400 hover:text-pink-300 transition-colors">Sign up</Link>
                         </p>
                     </div>
                 </form>

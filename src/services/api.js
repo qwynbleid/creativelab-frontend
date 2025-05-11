@@ -182,6 +182,18 @@ export const postService = {
             return { isLiked: false };
         }
     },
+
+    getRecommendedPosts: async (userId) => {
+        try {
+            const response = await api.get('/posts/recommendations', {
+                params: { userId },
+            });
+            return Array.isArray(response.data) ? response.data : [];
+        } catch (error) {
+            console.error('Error getting recommended posts:', error);
+            return [];
+        }
+    },
 };
 
 export const userService = {

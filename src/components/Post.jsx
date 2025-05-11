@@ -179,13 +179,13 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
     };
 
     return (
-        <div className="post-card bg-white rounded-2xl p-6 shadow-lg w-full max-w-2xl mx-auto relative">
+        <div className="post-card bg-gray-800 rounded-2xl p-6 shadow-lg w-full max-w-2xl mx-auto relative border border-gray-700">
             {/* Three-dot menu for post owner */}
             {post.user && post.user.id === currentUserId && (
                 <div className="absolute top-4 right-4 z-10" ref={menuRef}>
                     <button
                         onClick={() => setShowMenu((v) => !v)}
-                        className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+                        className="p-2 text-gray-400 hover:text-gray-200 rounded-full hover:bg-gray-700 transition-colors"
                         title="More options"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -193,10 +193,10 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                         </svg>
                     </button>
                     {showMenu && (
-                        <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+                        <div className="absolute right-0 mt-2 w-32 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-1">
                             <button
                                 onClick={() => { setShowMenu(false); setShowDeleteConfirm(true); }}
-                                className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                                className="block w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700"
                             >
                                 Delete
                             </button>
@@ -210,7 +210,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                     <img 
                         src={getProfilePictureUrl(post.user)}
                         alt={`${post.user?.username || 'User'}'s avatar`} 
-                        className="w-12 h-12 rounded-full group-hover:ring-2 group-hover:ring-indigo-400 transition"
+                        className="w-12 h-12 rounded-full group-hover:ring-2 group-hover:ring-pink-400 transition"
                         onError={(e) => {
                             console.error('Profile picture failed to load:', {
                                 src: e.target.src,
@@ -220,8 +220,8 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                         }}
                     />
                     <div>
-                        <h2 className="font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">{post.user?.fullName || 'Unknown User'}</h2>
-                        <p className="text-sm text-gray-500">
+                        <h2 className="font-semibold text-gray-200 group-hover:text-pink-400 transition-colors">{post.user?.fullName || 'Unknown User'}</h2>
+                        <p className="text-sm text-gray-400">
                             {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                         </p>
                     </div>
@@ -229,16 +229,16 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
             </div>
 
             <div className={`mt-4 ${!imageUrl ? 'mb-4' : ''}`}>
-                <h3 className="text-xl font-semibold text-gray-800">{post.title}</h3>
-                <p className="mt-2 text-gray-700 whitespace-pre-wrap break-words">{post.content}</p>
+                <h3 className="text-xl font-semibold text-gray-200">{post.title}</h3>
+                <p className="mt-2 text-gray-300 whitespace-pre-wrap break-words">{post.content}</p>
             </div>
 
             {imageUrl && (
-                <div className="flex justify-center items-center bg-gray-100 rounded-xl my-6 p-2">
+                <div className="w-full my-6">
                     <img
                         src={imageUrl}
                         alt="Post content"
-                        className="rounded-xl shadow-lg object-contain max-h-[600px] w-full"
+                        className="w-full rounded-xl shadow-lg object-contain max-h-[600px]"
                     />
                 </div>
             )}
@@ -247,85 +247,85 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                 <button 
                     onClick={handleLike}
                     className={`flex items-center space-x-2 transition-colors duration-200 ${
-                        isLiked 
-                            ? 'text-red-500 hover:text-red-600' 
-                            : 'text-gray-600 hover:text-red-500'
+                        isLiked ? 'text-pink-400' : 'text-gray-400 hover:text-pink-400'
                     }`}
                 >
-                    <i data-feather="heart" className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} data-feather-replace></i>
-                    <span className={isLiked ? 'text-red-500' : 'text-gray-600'}>Like ({likesCount})</span>
+                    <i data-feather={isLiked ? "heart" : "heart"} className="w-5 h-5" fill={isLiked ? "currentColor" : "none"}></i>
+                    <span>{likesCount}</span>
                 </button>
                 <button 
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors duration-200"
+                    className={`flex items-center space-x-2 transition-colors duration-200 ${
+                        showComments ? 'text-pink-400' : 'text-gray-400 hover:text-pink-400'
+                    }`}
                 >
-                    <i data-feather="message-square" className="w-5 h-5" data-feather-replace></i>
-                    <span>Comment ({commentsCount})</span>
+                    <i data-feather="message-circle" className="w-5 h-5"></i>
+                    <span>{commentsCount}</span>
                 </button>
             </div>
 
             {showComments && (
-                <div className="mt-4">
-                    <form onSubmit={handleComment} className="mb-4">
+                <div className="mt-4 space-y-4">
+                    <form onSubmit={handleComment} className="flex space-x-2">
                         <input
                             type="text"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             placeholder="Write a comment..."
-                            className="w-full p-2 border rounded-lg"
+                            className="flex-1 px-4 py-2 bg-card-dark border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                         />
-                        <button 
+                        <button
                             type="submit"
-                            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                            className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
                         >
-                            Comment
+                            Post
                         </button>
                     </form>
 
                     <div className="space-y-4">
-                        {comments.slice().reverse().map((comment) => (
-                            <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
-                                <div className="flex items-center space-x-2">
-                                    <img 
-                                        src={getProfilePictureUrl(comment.user)}
-                                        alt={`${comment.user?.username || 'User'}'s avatar`} 
-                                        className="w-8 h-8 rounded-full"
-                                        onError={(e) => {
-                                            console.error('Comment profile picture failed to load:', {
-                                                src: e.target.src,
-                                                user: comment.user
-                                            });
-                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.fullName || comment.user?.username || 'User')}&background=random&color=fff`;
-                                        }}
-                                    />
-                                    <span className="font-semibold">{comment.user?.fullName || 'Unknown User'}</span>
-                                </div>
-                                <p className="mt-2 text-gray-700">{comment.content}</p>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                                </p>
-                            </div>
-                        ))}
+                    {comments.slice().reverse().map((comment) => (
+                        <div
+                        key={comment.id}
+                        className="bg-neutral-1000 p-4 rounded-lg border border-neutral-700 shadow-sm"
+                        >
+                        <div className="flex items-center space-x-3">
+                            <img
+                            src={getProfilePictureUrl(comment.user)}
+                            alt={`${comment.user?.username || 'User'}'s avatar`}
+                            className="w-8 h-8 rounded-full mt-1"
+                            onError={(e) => {
+                                console.error('Comment profile picture failed to load:', {
+                                src: e.target.src,
+                                user: comment.user,
+                                });
+                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                comment.user?.fullName || comment.user?.username || 'User'
+                                )}&background=random&color=fff`;
+                            }}
+                            />
+                            <span className="font-semibold text-neutral-100">
+                            {comment.user?.fullName || 'Unknown User'}
+                            </span>
+                        </div>
+                        <p className="mt-2 text-neutral-100">{comment.content}</p>
+                        <p className="text-sm text-neutral-400 mt-1">
+                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                        </p>
+                        </div>
+                    ))}
                     </div>
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
             {showDeleteConfirm && ReactDOM.createPortal(
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-                    onClick={closeModal}
-                >
-                    <div
-                        className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <h3 className="text-xl font-semibold text-gray-900 mb-4">Delete Post</h3>
-                        <p className="text-gray-600 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
-                        <div className="flex justify-end gap-3">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                        <h3 className="text-xl font-semibold text-gray-200 mb-4">Delete Post</h3>
+                        <p className="text-gray-300 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                        <div className="flex justify-end space-x-4">
                             <button
                                 onClick={closeModal}
-                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="px-4 py-2 text-gray-300 hover:text-gray-100 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -334,7 +334,7 @@ const Post = ({ post, currentUserId, onPostUpdate }) => {
                                     handleDelete();
                                     closeModal();
                                 }}
-                                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                             >
                                 Delete
                             </button>

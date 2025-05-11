@@ -75,25 +75,25 @@ const SuggestedUsers = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="text-center text-red-500 p-4">
+            <div className="text-center text-red-400 p-4">
                 {error}
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Suggested Creatives</h2>
+        <div className="bg-card-dark rounded-2xl p-6 shadow-lg border border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-200 mb-4">Suggested Creatives</h2>
             <div className="space-y-4">
                 {!suggestedUsers || suggestedUsers.length === 0 ? (
-                    <div className="text-center text-gray-500">
+                    <div className="text-center text-gray-400">
                         No suggested users at the moment
                     </div>
                 ) : (
@@ -102,7 +102,7 @@ const SuggestedUsers = () => {
                             <img 
                                 src={getProfilePictureUrl(user)}
                                 alt={`${user.username}'s avatar`} 
-                                className="w-10 h-10 rounded-full"
+                                className="w-10 h-10 rounded-full border border-gray-700"
                                 onError={(e) => {
                                     console.error('Profile picture failed to load:', {
                                         src: e.target.src,
@@ -112,11 +112,11 @@ const SuggestedUsers = () => {
                                 }}
                             />
                             <div>
-                                <h3 className="font-semibold text-gray-800">{user.fullName}</h3>
-                                <p className="text-sm text-gray-500">{user.username}</p>
+                                <h3 className="font-semibold text-gray-200">{user.fullName}</h3>
+                                <p className="text-sm text-gray-400">{user.username}</p>
                                 <button 
                                     onClick={() => handleFollow(user.username)}
-                                    className="mt-2 text-blue-500 hover:underline"
+                                    className="mt-2 text-pink-400 hover:text-pink-300 transition-colors"
                                 >
                                     Follow
                                 </button>

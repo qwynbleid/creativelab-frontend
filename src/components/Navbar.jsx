@@ -147,24 +147,31 @@ const Navbar = () => {
         : searchResults;
 
     return (
-        <nav className="navbar fixed top-0 w-full z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <nav className="navbar fixed top-0 w-full z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <Link to="/" className="text-2xl font-bold">
-                        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Creative</span>Lab
+                        <span className="bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">Creative</span>Lab
                     </Link>
 
                     <div className="flex items-center space-x-4">
                         <Link 
                             to="/" 
-                            className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
+                            className="px-4 py-2 text-gray-300 hover:text-pink-400 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                         >
                             <i data-feather="home" className="w-5 h-5" data-feather-replace></i>
                             <span>Home</span>
                         </Link>
                         <Link 
+                            to="/recommended" 
+                            className="px-4 py-2 text-gray-300 hover:text-pink-400 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
+                        >
+                            <i data-feather="star" className="w-5 h-5" data-feather-replace></i>
+                            <span>Recommended</span>
+                        </Link>
+                        <Link 
                             to="/messages" 
-                            className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
+                            className="px-4 py-2 text-gray-300 hover:text-pink-400 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                         >
                             <i data-feather="message-circle" className="w-5 h-5" data-feather-replace></i>
                             <span>Chat</span>
@@ -172,7 +179,7 @@ const Navbar = () => {
 
                         {/* Search Icon Button with label */}
                         <button
-                            className="px-4 py-2 text-gray-700 hover:text-indigo-600 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
+                            className="px-4 py-2 text-gray-300 hover:text-pink-400 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                             onClick={() => {
                                 setShowSearchInput((v) => !v);
                                 setTimeout(() => {
@@ -196,29 +203,29 @@ const Navbar = () => {
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                     placeholder="Search users..."
-                                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm min-w-[220px]"
+                                    className="px-3 py-2 bg-card-dark border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm min-w-[220px] text-gray-300 placeholder-gray-500"
                                     autoFocus
                                 />
                                 {showSearchDropdown && (
-                                    <div className="absolute left-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                                    <div className="absolute left-0 mt-2 w-72 bg-card-dark border border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                                         {filteredSearchResults.length > 0 ? filteredSearchResults.map(user => (
                                             <div
                                                 key={user.id}
-                                                className="flex items-center gap-3 px-4 py-2 hover:bg-indigo-50 cursor-pointer"
+                                                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-700 cursor-pointer"
                                                 onClick={() => handleResultClick(user.id)}
                                             >
                                                 <img
                                                     src={user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.username)}&background=random&color=fff`}
                                                     alt={user.username}
-                                                    className="w-8 h-8 rounded-full object-cover border"
+                                                    className="w-8 h-8 rounded-full object-cover border border-gray-700"
                                                 />
                                                 <div>
-                                                    <div className="font-semibold text-gray-800">{user.fullName}</div>
-                                                    <div className="text-xs text-gray-500">@{user.username}</div>
+                                                    <div className="font-semibold text-gray-200">{user.fullName}</div>
+                                                    <div className="text-xs text-gray-400">@{user.username}</div>
                                                 </div>
                                             </div>
                                         )) : (
-                                            <div className="px-4 py-2 text-gray-500">No users found.</div>
+                                            <div className="px-4 py-2 text-gray-400">No users found.</div>
                                         )}
                                     </div>
                                 )}
@@ -231,7 +238,7 @@ const Navbar = () => {
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     className="flex items-center space-x-2 focus:outline-none"
                                 >
-                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-indigo-500">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-pink-500">
                                         {user.profilePicture || user.profilePictureBase64 ? (
                                             <img 
                                                 src={user.profilePicture || `data:image/jpeg;base64,${user.profilePictureBase64}`}
@@ -240,12 +247,12 @@ const Navbar = () => {
                                                 onError={handleImageError}
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                            <div className="w-full h-full bg-gray-800 flex items-center justify-center">
                                                 <i data-feather="user" className="w-6 h-6 text-gray-400" data-feather-replace></i>
                                             </div>
                                         )}
                                     </div>
-                                    <span className="text-gray-700">{user.username || 'User'}</span>
+                                    <span className="text-gray-300">{user.username || 'User'}</span>
                                     <i data-feather={isDropdownOpen ? "chevron-up" : "chevron-down"} className="w-5 h-5 text-gray-400" data-feather-replace></i>
                                 </button>
 

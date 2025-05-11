@@ -43,7 +43,7 @@ const Profile = () => {
 
     useEffect(() => {
         if (userId) {
-            // If we have user data in location state, use it
+            // If we have user data in location state, use it for instant display
             if (location.state?.userData) {
                 setProfile(location.state.userData);
                 setFormData({
@@ -60,10 +60,9 @@ const Profile = () => {
                             : `data:image/jpeg;base64,${location.state.userData.profilePicture}`
                         : null
                 );
-                setLoading(false);
-            } else {
-                fetchProfile();
             }
+            // Always fetch the full profile from the backend for up-to-date and complete data
+            fetchProfile();
             fetchPosts();
             fetchFollowStats();
         }
@@ -234,16 +233,16 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <div className="min-h-screen flex flex-col app-dark-bg">
             <Navbar />
             <div className="flex-grow pt-16 mb-16">
                 {/* Profile Header Section */}
                 <div className="max-w-6xl mx-auto px-4 mt-8">
-                    <div className="bg-white rounded-2xl shadow-lg p-8 relative">
+                    <div className="bg-card-dark rounded-2xl shadow-lg p-8 relative">
                         {/* Static Edit Profile Button (top right) */}
                         {isOwnProfile && !editMode && (
                             <button
-                                className="absolute top-4 right-4 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-full p-2 shadow transition"
+                                className="absolute top-4 right-4 bg-pink-100 hover:bg-pink-200 text-pink-600 rounded-full p-2 shadow transition"
                                 onClick={() => setEditMode(true)}
                                 title="Edit Profile"
                             >
@@ -265,7 +264,7 @@ const Profile = () => {
                                 ) : (
                                     <button
                                         onClick={handleFollow}
-                                        className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105"
+                                        className="px-6 py-2 bg-pink-600 text-white rounded-full font-semibold hover:bg-pink-700 transition-all duration-200 ease-in-out transform hover:scale-105"
                                     >
                                         Follow
                                     </button>
@@ -279,28 +278,28 @@ const Profile = () => {
                                     <img
                                         src={getProfilePictureUrl(profile, previewUrl)}
                                         alt="Profile"
-                                        className="w-40 h-40 rounded-full object-cover border-4 border-indigo-200 shadow-lg"
+                                        className="w-40 h-40 rounded-full object-cover border-4 border-pink-200 shadow-lg"
                                     />
                                 </div>
                             </div>
                             <div className="flex-grow text-center md:text-left">
-                                <div className="text-3xl font-bold text-gray-800">{profile.username}</div>
-                                <div className="text-xl text-gray-600 mt-1">{profile.fullName}</div>
-                                <div className="text-gray-500 mt-4 max-w-2xl">{profile.bio}</div>
+                                <div className="text-3xl font-bold text-gray-200">{profile.username}</div>
+                                <div className="text-xl text-gray-400 mt-1">{profile.fullName}</div>
+                                <div className="text-gray-300 mt-4 max-w-2xl">{profile.bio}</div>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
                                     {Array.isArray(profile.interests) && profile.interests.map((interest, idx) => (
-                                        <span key={idx} className="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-indigo-200 transition-colors">{interest}</span>
+                                        <span key={idx} className="bg-pink-100 text-pink-700 px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-pink-200 transition-colors">{interest}</span>
                                     ))}
                                 </div>
                                 {/* Follow Stats */}
                                 <div className="flex gap-6 mt-6">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-2xl font-bold text-gray-800">{followStats.followersCount}</span>
-                                        <span className="text-sm text-gray-500">Followers</span>
+                                        <span className="text-2xl font-bold text-gray-200">{followStats.followersCount}</span>
+                                        <span className="text-sm text-gray-400">Followers</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-2xl font-bold text-gray-800">{followStats.followingCount}</span>
-                                        <span className="text-sm text-gray-500">Following</span>
+                                        <span className="text-2xl font-bold text-gray-200">{followStats.followingCount}</span>
+                                        <span className="text-sm text-gray-400">Following</span>
                                     </div>
                                 </div>
                             </div>
@@ -310,15 +309,15 @@ const Profile = () => {
 
                 {/* Posts Section */}
                 <div className="max-w-6xl mx-auto px-4 mt-8">
-                    <h3 className="text-2xl font-bold mb-6 text-gray-800">
+                    <h3 className="text-2xl font-bold mb-6 text-gray-200">
                         {isOwnProfile
                             ? 'My Posts'
                             : `${profile.username ? profile.username + "'s" : 'User'} Posts`}
                     </h3>
                     <div className="flex flex-col gap-6">
                         {posts.length === 0 ? (
-                            <div className="text-center text-gray-400 bg-white rounded-xl p-8 shadow-md">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="text-center text-gray-400 bg-card-dark rounded-xl p-8 shadow-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                                 </svg>
                                 <p className="text-lg">No posts yet.</p>
@@ -343,27 +342,28 @@ const Profile = () => {
 
             {/* Edit Profile Modal/Overlay */}
             {editMode && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg relative animate-fadeIn">
-                        <button
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
-                            onClick={() => setEditMode(false)}
-                            title="Close"
-                        >
-                            &times;
-                        </button>
-                        <h2 className="text-2xl font-bold mb-6 text-center">Edit Profile</h2>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="flex flex-col items-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-card-dark p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                        <h3 className="text-xl font-semibold text-gray-200 mb-4">Edit Profile</h3>
+                        <form onSubmit={handleSubmit}>
+                            <div className="flex flex-col items-center mb-4">
                                 <div className="relative">
-                                    <img
-                                        src={getProfilePictureUrl(profile, previewUrl)}
-                                        alt="Profile preview"
-                                        className="w-24 h-24 rounded-full object-cover border-2 border-indigo-500"
-                                    />
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-500">
+                                        {previewUrl ? (
+                                            <img
+                                                src={previewUrl}
+                                                alt="Profile preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                                <i data-feather="user" className="h-12 w-12 text-gray-400"></i>
+                                            </div>
+                                        )}
+                                    </div>
                                     <label
                                         htmlFor="profilePicture"
-                                        className="absolute bottom-2 right-2 bg-indigo-600 text-white p-2 rounded-full cursor-pointer shadow-lg flex items-center justify-center hover:scale-110 transition"
+                                        className="absolute bottom-0 right-0 bg-pink-600 text-white p-1 rounded-full cursor-pointer hover:bg-pink-700 transition duration-150 ease-in-out"
                                         title="Change profile picture"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -380,81 +380,62 @@ const Profile = () => {
                                         />
                                     </label>
                                 </div>
-                                <p className="mt-2 text-sm text-gray-500">
+                                <p className="mt-2 text-sm text-gray-400">
                                     Click the camera icon to change your profile picture
                                 </p>
                             </div>
-                            <div>
-                                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                                    Username
-                                </label>
+                            <div className="mb-4">
+                                <label className="block text-gray-300 mb-2">Username</label>
                                 <input
                                     type="text"
                                     name="username"
-                                    id="username"
-                                    required
                                     value={formData.username}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                                    placeholder="Username"
+                                    className="w-full px-3 py-2 bg-card-dark border border-gray-700 rounded-md text-gray-100"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                                    Full Name
-                                </label>
+                            <div className="mb-4">
+                                <label className="block text-gray-300 mb-2">Full Name</label>
                                 <input
                                     type="text"
                                     name="fullName"
-                                    id="fullName"
-                                    required
                                     value={formData.fullName}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                                    placeholder="Full Name"
+                                    className="w-full px-3 py-2 bg-card-dark border border-gray-700 rounded-md text-gray-100"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                                    Bio
-                                </label>
+                            <div className="mb-4">
+                                <label className="block text-gray-300 mb-2">Bio</label>
                                 <textarea
                                     name="bio"
-                                    id="bio"
-                                    rows="3"
                                     value={formData.bio}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                                    placeholder="Tell us about yourself"
+                                    className="w-full px-3 py-2 bg-card-dark border border-gray-700 rounded-md text-gray-100"
                                 />
                             </div>
-                            <div>
-                                <label htmlFor="interests" className="block text-sm font-medium text-gray-700">
-                                    Interests
-                                </label>
+                            <div className="mb-4">
+                                <label className="block text-gray-300 mb-2">Interests (comma-separated)</label>
                                 <input
                                     type="text"
                                     name="interests"
-                                    id="interests"
                                     value={formData.interests}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                                    placeholder="Enter interests separated by commas"
+                                    className="w-full px-3 py-2 bg-card-dark border border-gray-700 rounded-md text-gray-100"
                                 />
                             </div>
-                            <div className="flex justify-end gap-3 mt-6">
+                            <div className="flex justify-end space-x-4">
                                 <button
                                     type="button"
-                                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300 transition"
                                     onClick={() => setEditMode(false)}
+                                    className="px-4 py-2 text-gray-300 hover:text-gray-100 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition"
+                                    className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
                                 >
-                                    Save Changes
+                                    Save
                                 </button>
                             </div>
                         </form>
@@ -465,13 +446,13 @@ const Profile = () => {
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-4">Delete Post</h3>
-                        <p className="text-gray-600 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                    <div className="bg-gray-900 rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
+                        <h3 className="text-xl font-semibold text-gray-200 mb-4">Delete Post</h3>
+                        <p className="text-gray-400 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setShowDeleteConfirm(null)}
-                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="px-4 py-2 text-gray-700 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -489,13 +470,13 @@ const Profile = () => {
                 </div>
             )}
 
-            <footer className="bg-gray-800 text-white py-6 relative z-10 mt-auto">
+            <footer className="bg-gray-1000/10 backdrop-blur-sm text-white py-6 relative z-10 mt-auto border-t border-gray-800">
                 <div className="container mx-auto px-4 text-center">
                     <p className="mb-4">CreativeHub &copy; 2025</p>
                     <div className="flex justify-center space-x-4">
-                        <a href="#" className="hover:text-blue-400">About</a>
-                        <a href="#" className="hover:text-blue-400">Rules</a>
-                        <a href="#" className="hover:text-blue-400">Contact</a>
+                        <a href="#" className="hover:text-pink-400">About</a>
+                        <a href="#" className="hover:text-pink-400">Rules</a>
+                        <a href="#" className="hover:text-pink-400">Contact</a>
                     </div>
                 </div>
             </footer>

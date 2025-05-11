@@ -11,17 +11,17 @@ const TrendingTags = () => {
     ];
 
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Trending Tags</h2>
+        <div className="bg-card-dark rounded-2xl p-6 shadow-lg border border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-200 mb-4">Trending Tags</h2>
             <ul className="space-y-2">
                 {trendingTags.map((tag) => (
                     <li key={tag.name}>
                         <a 
                             href={`/tag/${tag.name}`} 
-                            className="text-blue-500 hover:underline flex justify-between items-center"
+                            className="text-pink-400 hover:text-pink-300 flex justify-between items-center transition-colors"
                         >
                             <span>#{tag.name}</span>
-                            <span className="text-sm text-gray-500">{tag.count} posts</span>
+                            <span className="text-sm text-gray-400">{tag.count} posts</span>
                         </a>
                     </li>
                 ))}
