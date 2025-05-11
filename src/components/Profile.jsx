@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { profileService, postService, userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from './Navbar';
@@ -18,7 +18,8 @@ const getProfilePictureUrl = (profile, previewUrl) => {
 const Profile = () => {
     const { userId: paramUserId } = useParams();
     const { user } = useAuth();
-    const userId = paramUserId || user?.id;
+    const location = useLocation();
+    const userId = paramUserId;
 
     const [profile, setProfile] = useState(null);
     const [editMode, setEditMode] = useState(false);
@@ -38,21 +39,35 @@ const Profile = () => {
     const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
     const [isFollowing, setIsFollowing] = useState(false);
 
-    const isOwnProfile = user && profile && (user.id === profile.id || user.id === profile.userId);
+    const isOwnProfile = user && profile && (String(user.id) === String(profile.id) || String(user.id) === String(profile.userId));
 
     useEffect(() => {
         if (userId) {
-            fetchProfile();
+            // If we have user data in location state, use it
+            if (location.state?.userData) {
+                setProfile(location.state.userData);
+                setFormData({
+                    username: location.state.userData.username || '',
+                    fullName: location.state.userData.fullName || '',
+                    bio: location.state.userData.bio || '',
+                    interests: Array.isArray(location.state.userData.interests) ? location.state.userData.interests.join(', ') : '',
+                    profilePicture: null
+                });
+                setPreviewUrl(
+                    location.state.userData.profilePicture
+                        ? location.state.userData.profilePicture.startsWith('data:image')
+                            ? location.state.userData.profilePicture
+                            : `data:image/jpeg;base64,${location.state.userData.profilePicture}`
+                        : null
+                );
+                setLoading(false);
+            } else {
+                fetchProfile();
+            }
             fetchPosts();
             fetchFollowStats();
         }
-    }, [userId]);
-
-    useEffect(() => {
-        if (user && profile && !isOwnProfile) {
-            checkIfFollowing();
-        }
-    }, [user, profile, isOwnProfile]);
+    }, [userId, location.state]);
 
     const fetchProfile = async () => {
         setLoading(true);
@@ -74,7 +89,6 @@ const Profile = () => {
                         : `data:image/jpeg;base64,${data.profilePicture}`
                     : null
             );
-            
         } catch (err) {
             setError('Failed to load profile.');
         } finally {
@@ -100,33 +114,59 @@ const Profile = () => {
         }
     };
 
-    const checkIfFollowing = async () => {
+    useEffect(() => {
+        const checkFollowingStatus = async () => {
+            if (user && profile && !isOwnProfile) {
+                try {
+                    const followingList = await userService.getFollowing(user.id);
+                    const isFollowingUser = followingList.some(
+                        u => String(u.id) === String(profile.id) || String(u.id) === String(profile.userId)
+                    );
+                    setIsFollowing(isFollowingUser);
+                } catch (err) {
+                    console.error('Error checking following status:', err);
+                    setIsFollowing(false);
+                }
+            }
+        };
+
+        checkFollowingStatus();
+    }, [user, profile, isOwnProfile]);
+
+    const handleFollow = async () => {
+        // Optimistically update UI
+        setIsFollowing(true);
+        const previousStats = { ...followStats };
+        setFollowStats(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
+
         try {
-            const followingList = await userService.getFollowing(user.id);
-            setIsFollowing(
-                followingList.some(
-                    u => String(u.id) === String(profile.id) || String(u.id) === String(profile.userId)
-                )
-            );
+            await userService.followUser(user.id, profile.username);
+            // Refresh stats in background
+            fetchFollowStats();
         } catch (err) {
+            console.error('Error following user:', err);
+            // Revert on error
             setIsFollowing(false);
+            setFollowStats(previousStats);
         }
     };
 
-    const handleFollow = async () => {
-        try {
-            await userService.followUser(user.id, profile.username);
-            setIsFollowing(true);
-            fetchFollowStats();
-        } catch (err) {}
-    };
-
     const handleUnfollow = async () => {
+        // Optimistically update UI
+        setIsFollowing(false);
+        const previousStats = { ...followStats };
+        setFollowStats(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
+
         try {
             await userService.unfollowUser(user.id, profile.username);
-            setIsFollowing(false);
+            // Refresh stats in background
             fetchFollowStats();
-        } catch (err) {}
+        } catch (err) {
+            console.error('Error unfollowing user:', err);
+            // Revert on error
+            setIsFollowing(true);
+            setFollowStats(previousStats);
+        }
     };
 
     const handleChange = (e) => {
@@ -218,14 +258,14 @@ const Profile = () => {
                                 {isFollowing ? (
                                     <button
                                         onClick={handleUnfollow}
-                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300 transition"
+                                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full font-semibold hover:bg-gray-300 transition-all duration-200 ease-in-out transform hover:scale-105"
                                     >
                                         Unfollow
                                     </button>
                                 ) : (
                                     <button
                                         onClick={handleFollow}
-                                        className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition"
+                                        className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105"
                                     >
                                         Follow
                                     </button>

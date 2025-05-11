@@ -60,11 +60,13 @@ const Navbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Close search dropdown when clicking outside
+    // Close search dropdown and input when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setShowSearchDropdown(false);
+                setShowSearchInput(false);
+                setSearchTerm('');
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -123,11 +125,20 @@ const Navbar = () => {
         setShowSearchDropdown(true);
     };
 
-    const handleResultClick = (userId) => {
-        setShowSearchDropdown(false);
-        setSearchTerm('');
-        setSearchResults([]);
-        navigate(`/profile/${userId}`);
+    const handleResultClick = async (userId) => {
+        try {
+            // Get the full user data before navigation
+            const userData = await userService.getUser(userId);
+            setShowSearchDropdown(false);
+            setSearchTerm('');
+            setSearchResults([]);
+            // Navigate to profile with the user data
+            navigate(`/profile/${userId}`, { state: { userData } });
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            // Fallback to simple navigation if user data fetch fails
+            navigate(`/profile/${userId}`);
+        }
     };
 
     // Filter out the logged-in user from search results
