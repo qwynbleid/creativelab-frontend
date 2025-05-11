@@ -12,6 +12,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { initializeIcons, updateIcons } from './utils/icons';
 import Profile from './components/Profile';
 import RecommendedPosts from './components/RecommendedPosts';
+import Chats from './components/Chats';
 
 function App() {
     // Initialize Feather Icons
@@ -110,6 +111,19 @@ function App() {
                                     <button className="fixed bottom-10 right-6 bg-pink-600 text-white w-14 h-14 flex items-center justify-center rounded-full shadow-lg hover:bg-pink-700 transition-colors duration-200 z-50">
                                         <i data-feather="plus" className="w-6 h-6"></i>
                                     </button>
+                                </div>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/chats"
+                        element={
+                            <ProtectedRoute>
+                                <div className="min-h-screen flex flex-col app-dark-bg">
+                                    <Navbar />
+                                    <div className="flex-1">
+                                        <Chats />
+                                    </div>
                                 </div>
                             </ProtectedRoute>
                         }

@@ -170,11 +170,11 @@ const Navbar = () => {
                             <span>Recommended</span>
                         </Link>
                         <Link 
-                            to="/messages" 
+                            to="/chats" 
                             className="px-4 py-2 text-gray-300 hover:text-pink-400 rounded-md flex items-center space-x-2 transition duration-150 ease-in-out"
                         >
                             <i data-feather="message-circle" className="w-5 h-5" data-feather-replace></i>
-                            <span>Chat</span>
+                            <span>Chats</span>
                         </Link>
 
                         {/* Search Icon Button with label */}
